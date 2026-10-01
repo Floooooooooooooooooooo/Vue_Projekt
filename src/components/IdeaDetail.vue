@@ -1,0 +1,118 @@
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  idea: { type: Object, default: null },
+})
+
+const emit = defineEmits(['update'])
+
+const editableIdea = computed({
+  get: () => props.idea,
+  set: (value) => emit('update', value),
+})
+
+function updateField(field, value) {
+  emit('update', { ...props.idea, [field]: value })
+}
+</script>
+
+<template>
+  <section v-if="editableIdea" class="detail-panel">
+    <div class="detail-heading">
+      <div>
+        <p class="eyebrow">DETAILANSICHT</p>
+        <h2>{{ editableIdea.title || 'Unbenannte Idee' }}</h2>
+      </div>
+      <span class="save-indicator">✓ automatisch gespeichert</span>
+    </div>
+
+    <div class="form-grid">
+      <label class="field field--wide">
+        <span>Titel</span>
+        <input
+          :value="editableIdea.title"
+          type="text"
+          @input="updateField('title', $event.target.value)"
+        />
+      </label>
+
+      <label class="field">
+        <span>Kategorie</span>
+        <input
+          :value="editableIdea.category"
+          type="text"
+          @input="updateField('category', $event.target.value)"
+        />
+      </label>
+
+      <label class="field">
+        <span>Verantwortlich</span>
+        <input
+          :value="editableIdea.owner"
+          type="text"
+          @input="updateField('owner', $event.target.value)"
+        />
+      </label>
+
+      <label class="field">
+        <span>Status</span>
+        <select :value="editableIdea.status" @change="updateField('status', $event.target.value)">
+          <option>Idee</option>
+          <option>Geplant</option>
+          <option>In Arbeit</option>
+          <option>Erledigt</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Priorität</span>
+        <select
+          :value="editableIdea.priority"
+          @change="updateField('priority', $event.target.value)"
+        >
+          <option>Niedrig</option>
+          <option>Mittel</option>
+          <option>Hoch</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Fällig am</span>
+        <input
+          :value="editableIdea.dueDate"
+          type="date"
+          @input="updateField('dueDate', $event.target.value)"
+        />
+      </label>
+
+      <label class="field">
+        <span>Fortschritt: {{ editableIdea.progress }} %</span>
+        <input
+          :value="editableIdea.progress"
+          class="range"
+          type="range"
+          min="0"
+          max="100"
+          step="5"
+          @input="updateField('progress', Number($event.target.value))"
+        />
+      </label>
+
+      <label class="field field--wide">
+        <span>Beschreibung</span>
+        <textarea
+          :value="editableIdea.description"
+          rows="6"
+          @input="updateField('description', $event.target.value)"
+        ></textarea>
+      </label>
+    </div>
+  </section>
+
+  <section v-else class="detail-panel detail-panel--empty">
+    <div class="empty-illustration">✦</div>
+    <h2>Wähle eine Idee aus</h2>
+    <p>Die Details erscheinen hier und können direkt bearbeitet werden.</p>
+  </section>
+</template>

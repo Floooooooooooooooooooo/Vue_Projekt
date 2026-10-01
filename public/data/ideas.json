@@ -1,0 +1,46 @@
+[
+  {
+    "id": 101,
+    "title": "Schulgarten digital planen",
+    "category": "Umwelt",
+    "status": "In Arbeit",
+    "priority": "Hoch",
+    "description": "Ein übersichtlicher Pflanzplan mit Beeten, Saatzeiten und verantwortlichen Klassen.",
+    "owner": "Mia",
+    "dueDate": "2026-10-16",
+    "progress": 65
+  },
+  {
+    "id": 102,
+    "title": "Lernkarten-Tauschbörse",
+    "category": "Lernen",
+    "status": "Idee",
+    "priority": "Mittel",
+    "description": "Schülerinnen und Schüler können eigene Lernkarten-Sets teilen und bewerten.",
+    "owner": "Noah",
+    "dueDate": "2026-11-06",
+    "progress": 20
+  },
+  {
+    "id": 103,
+    "title": "Repair-Café organisieren",
+    "category": "Community",
+    "status": "Geplant",
+    "priority": "Hoch",
+    "description": "Ein monatlicher Nachmittag, an dem defekte Alltagsgegenstände gemeinsam repariert werden.",
+    "owner": "Lea",
+    "dueDate": "2026-10-30",
+    "progress": 40
+  },
+  {
+    "id": 104,
+    "title": "Podcast aus dem Schulalltag",
+    "category": "Medien",
+    "status": "Erledigt",
+    "priority": "Niedrig",
+    "description": "Kurze Interviews und Geschichten aus verschiedenen Klassen als monatliche Episode.",
+    "owner": "Elias",
+    "dueDate": "2026-09-18",
+    "progress": 100
+  }
+]
