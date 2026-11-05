@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import IdeaDetail from '@/components/IdeaDetail.vue'
 import IdeaList from '@/components/IdeaList.vue'
 import { useIdeas } from '@/composables/useIdeas'
-import { STATUSES } from '@/constants'
+import { PRIORITIES, SORT_OPTIONS, STATUSES } from '@/constants'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +15,7 @@ const { ideas, isLoading, errorMessage, loadIdeas, addIdea: createIdea, updateId
 // ref: einzelne UI-Zustände
 const searchTerm = ref('')
 const statusFilter = ref('Alle')
+const sortBy = ref('newest')
 const newTitle = ref('')
 
 const selectedId = computed(() => {
@@ -37,6 +38,19 @@ const filteredIdeas = computed(() => {
     const haystack = `${idea.title} ${idea.category} ${idea.owner}`.toLocaleLowerCase('de')
     return matchesStatus && haystack.includes(needle)
   })
+})
+
+const comparators = {
+  // höhere Priorität zuerst
+  priority: (a, b) => PRIORITIES.indexOf(b.priority) - PRIORITIES.indexOf(a.priority),
+  // Ideen ohne Datum landen am Ende
+  dueDate: (a, b) => (a.dueDate || '9999-12-31').localeCompare(b.dueDate || '9999-12-31'),
+  title: (a, b) => a.title.localeCompare(b.title, 'de'),
+}
+
+const sortedIdeas = computed(() => {
+  const compare = comparators[sortBy.value]
+  return compare ? [...filteredIdeas.value].sort(compare) : filteredIdeas.value
 })
 
 function selectIdea(id) {
@@ -90,6 +104,9 @@ onMounted(() => loadIdeas())
           <option>Alle</option>
           <option v-for="status in STATUSES" :key="status">{{ status }}</option>
         </select>
+        <select v-model="sortBy" aria-label="Sortierung">
+          <option v-for="(label, key) in SORT_OPTIONS" :key="key" :value="key">{{ label }}</option>
+        </select>
       </div>
 
       <p v-if="isLoading" class="notice">Ideen werden per Fetch geladen …</p>
@@ -99,7 +116,7 @@ onMounted(() => loadIdeas())
       </div>
       <IdeaList
         v-else
-        :ideas="filteredIdeas"
+        :ideas="sortedIdeas"
         :selected-id="selectedId"
         @select="selectIdea"
         @remove="removeIdea"
