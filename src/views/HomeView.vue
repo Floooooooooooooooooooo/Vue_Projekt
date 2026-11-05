@@ -53,10 +53,14 @@ function addIdea() {
 }
 
 function removeIdea(id) {
+  const idea = ideas.find((item) => item.id === id)
+  if (!idea || !window.confirm(`„${idea.title || 'Unbenannte Idee'}“ wirklich löschen?`)) return
+
   if (deleteIdea(id) && selectedId.value === id) router.push({ name: 'home' })
 }
 
 async function resetIdeas() {
+  if (!window.confirm('Alle Änderungen verwerfen und Beispieldaten neu laden?')) return
   await loadIdeas(true)
   router.push({ name: 'home' })
 }
