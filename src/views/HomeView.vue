@@ -1,22 +1,21 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import IdeaDetail from '@/components/IdeaDetail.vue'
 import IdeaList from '@/components/IdeaList.vue'
-import { STATUSES, STORAGE_KEY } from '@/constants'
+import { useIdeas } from '@/composables/useIdeas'
+import { STATUSES } from '@/constants'
 
 const route = useRoute()
 const router = useRouter()
 
-// reactive: die veränderbare Sammlung unserer Fachdaten
-const ideas = reactive([])
+const { ideas, isLoading, errorMessage, loadIdeas, addIdea: createIdea, updateIdea, removeIdea: deleteIdea } =
+  useIdeas()
 
 // ref: einzelne UI-Zustände
 const searchTerm = ref('')
 const statusFilter = ref('Alle')
 const newTitle = ref('')
-const isLoading = ref(true)
-const errorMessage = ref('')
 
 const selectedId = computed(() => {
   const id = Number(route.params.id)
@@ -35,26 +34,6 @@ const filteredIdeas = computed(() => {
   })
 })
 
-async function loadIdeas(ignoreSaved = false) {
-  isLoading.value = true
-  errorMessage.value = ''
-
-  try {
-    const response = await fetch('/data/ideas.json')
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-
-    const fetchedIdeas = await response.json()
-    const savedIdeas = ignoreSaved ? null : localStorage.getItem(STORAGE_KEY)
-    ideas.splice(0, ideas.length, ...(savedIdeas ? JSON.parse(savedIdeas) : fetchedIdeas))
-
-    if (ignoreSaved) localStorage.removeItem(STORAGE_KEY)
-  } catch (error) {
-    errorMessage.value = `Die Daten konnten nicht geladen werden (${error.message}).`
-  } finally {
-    isLoading.value = false
-  }
-}
-
 function selectIdea(id) {
   router.push({ name: 'idea-detail', params: { id } })
 }
@@ -63,47 +42,19 @@ function addIdea() {
   const title = newTitle.value.trim()
   if (!title) return
 
-  const nextId = Math.max(0, ...ideas.map((idea) => idea.id)) + 1
-  ideas.unshift({
-    id: nextId,
-    title,
-    category: 'Allgemein',
-    status: 'Idee',
-    priority: 'Mittel',
-    description: '',
-    owner: '',
-    dueDate: '',
-    progress: 0,
-  })
+  const id = createIdea(title)
   newTitle.value = ''
-  selectIdea(nextId)
-}
-
-function updateIdea(updatedIdea) {
-  const index = ideas.findIndex((idea) => idea.id === updatedIdea.id)
-  if (index !== -1) Object.assign(ideas[index], updatedIdea)
+  selectIdea(id)
 }
 
 function removeIdea(id) {
-  const index = ideas.findIndex((idea) => idea.id === id)
-  if (index === -1) return
-
-  ideas.splice(index, 1)
-  if (selectedId.value === id) router.push({ name: 'home' })
+  if (deleteIdea(id) && selectedId.value === id) router.push({ name: 'home' })
 }
 
 async function resetIdeas() {
   await loadIdeas(true)
   router.push({ name: 'home' })
 }
-
-watch(
-  ideas,
-  (currentIdeas) => {
-    if (!isLoading.value) localStorage.setItem(STORAGE_KEY, JSON.stringify(currentIdeas))
-  },
-  { deep: true },
-)
 
 onMounted(() => loadIdeas())
 </script>
