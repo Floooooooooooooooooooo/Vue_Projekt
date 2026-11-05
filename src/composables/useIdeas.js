@@ -7,19 +7,34 @@ export function useIdeas() {
   const isLoading = ref(true)
   const errorMessage = ref('')
 
+  function readSavedIdeas() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
+      return Array.isArray(saved) ? saved : null
+    } catch {
+      // kaputte Daten im Speicher ignorieren und neu laden
+      localStorage.removeItem(STORAGE_KEY)
+      return null
+    }
+  }
+
   async function loadIdeas(ignoreSaved = false) {
     isLoading.value = true
     errorMessage.value = ''
 
     try {
-      const response = await fetch('/data/ideas.json')
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-
-      const fetchedIdeas = await response.json()
-      const savedIdeas = ignoreSaved ? null : localStorage.getItem(STORAGE_KEY)
-      ideas.splice(0, ideas.length, ...(savedIdeas ? JSON.parse(savedIdeas) : fetchedIdeas))
-
       if (ignoreSaved) localStorage.removeItem(STORAGE_KEY)
+
+      let loadedIdeas = ignoreSaved ? null : readSavedIdeas()
+
+      if (!loadedIdeas) {
+        // BASE_URL beachten, damit die App auch in einem Unterordner läuft (z. B. GitHub Pages)
+        const response = await fetch(`${import.meta.env.BASE_URL}data/ideas.json`)
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        loadedIdeas = await response.json()
+      }
+
+      ideas.splice(0, ideas.length, ...loadedIdeas)
     } catch (error) {
       errorMessage.value = `Die Daten konnten nicht geladen werden (${error.message}).`
     } finally {
