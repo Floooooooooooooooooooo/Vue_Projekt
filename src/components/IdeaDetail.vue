@@ -1,8 +1,10 @@
 <script setup>
+import { RouterLink } from 'vue-router'
 import { PRIORITIES, STATUSES } from '@/constants'
 
 const props = defineProps({
   idea: { type: Object, default: null },
+  missing: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update'])
@@ -98,6 +100,13 @@ function updateField(field, value) {
         ></textarea>
       </label>
     </div>
+  </section>
+
+  <section v-else-if="missing" class="detail-panel detail-panel--empty">
+    <div class="empty-illustration">?</div>
+    <h2>Idee nicht gefunden</h2>
+    <p>Diese Idee existiert nicht (mehr). Vielleicht wurde sie gelöscht.</p>
+    <RouterLink class="back-link" to="/">← Zur Übersicht</RouterLink>
   </section>
 
   <section v-else class="detail-panel detail-panel--empty">

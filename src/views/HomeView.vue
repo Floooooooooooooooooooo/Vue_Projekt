@@ -24,6 +24,11 @@ const selectedId = computed(() => {
 
 const selectedIdea = computed(() => ideas.find((idea) => idea.id === selectedId.value) ?? null)
 
+// ID in der URL, zu der es (nach dem Laden) keine Idee gibt
+const isMissingIdea = computed(
+  () => !isLoading.value && selectedId.value !== null && selectedIdea.value === null,
+)
+
 const filteredIdeas = computed(() => {
   const needle = searchTerm.value.trim().toLocaleLowerCase('de')
 
@@ -99,6 +104,6 @@ onMounted(() => loadIdeas())
       <button class="reset-button" type="button" @click="resetIdeas">↻ Beispieldaten neu laden</button>
     </section>
 
-    <IdeaDetail :idea="selectedIdea" @update="updateIdea" />
+    <IdeaDetail :idea="selectedIdea" :missing="isMissingIdea" @update="updateIdea" />
   </main>
 </template>
