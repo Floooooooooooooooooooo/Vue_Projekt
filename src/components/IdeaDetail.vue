@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue'
 import { PRIORITIES, STATUSES } from '@/constants'
 
 const props = defineProps({
@@ -8,22 +7,17 @@ const props = defineProps({
 
 const emit = defineEmits(['update'])
 
-const editableIdea = computed({
-  get: () => props.idea,
-  set: (value) => emit('update', value),
-})
-
 function updateField(field, value) {
   emit('update', { ...props.idea, [field]: value })
 }
 </script>
 
 <template>
-  <section v-if="editableIdea" class="detail-panel">
+  <section v-if="idea" class="detail-panel">
     <div class="detail-heading">
       <div>
         <p class="eyebrow">DETAILANSICHT</p>
-        <h2>{{ editableIdea.title || 'Unbenannte Idee' }}</h2>
+        <h2>{{ idea.title || 'Unbenannte Idee' }}</h2>
       </div>
       <span class="save-indicator">✓ automatisch gespeichert</span>
     </div>
@@ -32,7 +26,7 @@ function updateField(field, value) {
       <label class="field field--wide">
         <span>Titel</span>
         <input
-          :value="editableIdea.title"
+          :value="idea.title"
           type="text"
           @input="updateField('title', $event.target.value)"
         />
@@ -41,7 +35,7 @@ function updateField(field, value) {
       <label class="field">
         <span>Kategorie</span>
         <input
-          :value="editableIdea.category"
+          :value="idea.category"
           type="text"
           @input="updateField('category', $event.target.value)"
         />
@@ -50,7 +44,7 @@ function updateField(field, value) {
       <label class="field">
         <span>Verantwortlich</span>
         <input
-          :value="editableIdea.owner"
+          :value="idea.owner"
           type="text"
           @input="updateField('owner', $event.target.value)"
         />
@@ -58,7 +52,7 @@ function updateField(field, value) {
 
       <label class="field">
         <span>Status</span>
-        <select :value="editableIdea.status" @change="updateField('status', $event.target.value)">
+        <select :value="idea.status" @change="updateField('status', $event.target.value)">
           <option v-for="status in STATUSES" :key="status">{{ status }}</option>
         </select>
       </label>
@@ -66,7 +60,7 @@ function updateField(field, value) {
       <label class="field">
         <span>Priorität</span>
         <select
-          :value="editableIdea.priority"
+          :value="idea.priority"
           @change="updateField('priority', $event.target.value)"
         >
           <option v-for="priority in PRIORITIES" :key="priority">{{ priority }}</option>
@@ -76,16 +70,16 @@ function updateField(field, value) {
       <label class="field">
         <span>Fällig am</span>
         <input
-          :value="editableIdea.dueDate"
+          :value="idea.dueDate"
           type="date"
           @input="updateField('dueDate', $event.target.value)"
         />
       </label>
 
       <label class="field">
-        <span>Fortschritt: {{ editableIdea.progress }} %</span>
+        <span>Fortschritt: {{ idea.progress }} %</span>
         <input
-          :value="editableIdea.progress"
+          :value="idea.progress"
           class="range"
           type="range"
           min="0"
@@ -98,7 +92,7 @@ function updateField(field, value) {
       <label class="field field--wide">
         <span>Beschreibung</span>
         <textarea
-          :value="editableIdea.description"
+          :value="idea.description"
           rows="6"
           @input="updateField('description', $event.target.value)"
         ></textarea>
