@@ -27,9 +27,13 @@ function formatDate(isoDate) {
       :key="idea.id"
       class="idea-card"
       :class="{ selected: idea.id === selectedId }"
+      role="button"
       tabindex="0"
+      :aria-pressed="idea.id === selectedId"
       @click="$emit('select', idea.id)"
       @keydown.enter="$emit('select', idea.id)"
+      @keydown.space.prevent="$emit('select', idea.id)"
+      @keydown.delete.self="$emit('remove', idea.id)"
     >
       <div class="idea-card__topline">
         <span class="category">{{ idea.category }}</span>

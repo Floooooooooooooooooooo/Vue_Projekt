@@ -155,6 +155,8 @@ h1, h2 { margin-bottom: 0; letter-spacing: -0.04em; line-height: 1.15; }
   border-color: var(--line);
 }
 
+.idea-card:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
 .idea-card.selected {
   background: var(--card);
   border-color: var(--green);
