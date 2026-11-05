@@ -254,6 +254,8 @@ h1, h2 { margin-bottom: 0; letter-spacing: -0.04em; line-height: 1.15; }
 .field textarea { resize: vertical; }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--green); }
 .field--wide { grid-column: 1 / -1; }
+.field--error input { border-color: var(--orange); }
+.field-hint { display: block; margin-top: 6px; color: var(--orange); font-size: 12px; font-weight: 600; }
 .field .range { height: 45px; padding: 0; accent-color: var(--green); border: 0; }
 .detail-panel--empty { min-height: 500px; }
 

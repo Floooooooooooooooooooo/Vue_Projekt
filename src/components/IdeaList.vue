@@ -30,7 +30,7 @@ defineEmits(['select', 'remove'])
           ×
         </button>
       </div>
-      <h3>{{ idea.title }}</h3>
+      <h3>{{ idea.title || 'Unbenannte Idee' }}</h3>
       <div class="idea-card__meta">
         <span class="status-dot" :data-status="idea.status"></span>
         {{ idea.status }} · {{ idea.progress }} %

@@ -25,13 +25,16 @@ function updateField(field, value) {
     </div>
 
     <div class="form-grid">
-      <label class="field field--wide">
+      <label class="field field--wide" :class="{ 'field--error': !idea.title.trim() }">
         <span>Titel</span>
         <input
           :value="idea.title"
           type="text"
+          required
+          :aria-invalid="!idea.title.trim()"
           @input="updateField('title', $event.target.value)"
         />
+        <small v-if="!idea.title.trim()" class="field-hint">Bitte gib einen Titel ein.</small>
       </label>
 
       <label class="field">
