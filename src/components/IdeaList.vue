@@ -5,6 +5,19 @@ defineProps({
 })
 
 defineEmits(['select', 'remove'])
+
+const today = new Date().toISOString().slice(0, 10)
+
+function isOverdue(idea) {
+  return Boolean(idea.dueDate) && idea.dueDate < today && idea.status !== 'Erledigt'
+}
+
+function formatDate(isoDate) {
+  return new Date(`${isoDate}T00:00:00`).toLocaleDateString('de-AT', {
+    day: '2-digit',
+    month: '2-digit',
+  })
+}
 </script>
 
 <template>
@@ -34,6 +47,10 @@ defineEmits(['select', 'remove'])
       <div class="idea-card__meta">
         <span class="status-dot" :data-status="idea.status"></span>
         {{ idea.status }} · {{ idea.progress }} %
+        <span class="priority-badge" :data-priority="idea.priority">{{ idea.priority }}</span>
+        <span v-if="idea.dueDate" class="due-date" :class="{ 'due-date--overdue': isOverdue(idea) }">
+          {{ isOverdue(idea) ? 'überfällig seit' : 'bis' }} {{ formatDate(idea.dueDate) }}
+        </span>
       </div>
     </article>
 
