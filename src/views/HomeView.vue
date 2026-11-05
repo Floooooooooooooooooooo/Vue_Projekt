@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import IdeaDetail from '@/components/IdeaDetail.vue'
 import IdeaList from '@/components/IdeaList.vue'
+import { STATUSES, STORAGE_KEY } from '@/constants'
 
 const route = useRoute()
 const router = useRouter()
@@ -43,10 +44,10 @@ async function loadIdeas(ignoreSaved = false) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
     const fetchedIdeas = await response.json()
-    const savedIdeas = ignoreSaved ? null : localStorage.getItem('idea-lab-items')
+    const savedIdeas = ignoreSaved ? null : localStorage.getItem(STORAGE_KEY)
     ideas.splice(0, ideas.length, ...(savedIdeas ? JSON.parse(savedIdeas) : fetchedIdeas))
 
-    if (ignoreSaved) localStorage.removeItem('idea-lab-items')
+    if (ignoreSaved) localStorage.removeItem(STORAGE_KEY)
   } catch (error) {
     errorMessage.value = `Die Daten konnten nicht geladen werden (${error.message}).`
   } finally {
@@ -99,7 +100,7 @@ async function resetIdeas() {
 watch(
   ideas,
   (currentIdeas) => {
-    if (!isLoading.value) localStorage.setItem('idea-lab-items', JSON.stringify(currentIdeas))
+    if (!isLoading.value) localStorage.setItem(STORAGE_KEY, JSON.stringify(currentIdeas))
   },
   { deep: true },
 )
@@ -127,10 +128,7 @@ onMounted(() => loadIdeas())
         <input v-model="searchTerm" type="search" placeholder="Ideen durchsuchen …" />
         <select v-model="statusFilter" aria-label="Nach Status filtern">
           <option>Alle</option>
-          <option>Idee</option>
-          <option>Geplant</option>
-          <option>In Arbeit</option>
-          <option>Erledigt</option>
+          <option v-for="status in STATUSES" :key="status">{{ status }}</option>
         </select>
       </div>
 

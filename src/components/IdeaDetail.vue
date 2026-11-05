@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { PRIORITIES, STATUSES } from '@/constants'
 
 const props = defineProps({
   idea: { type: Object, default: null },
@@ -58,10 +59,7 @@ function updateField(field, value) {
       <label class="field">
         <span>Status</span>
         <select :value="editableIdea.status" @change="updateField('status', $event.target.value)">
-          <option>Idee</option>
-          <option>Geplant</option>
-          <option>In Arbeit</option>
-          <option>Erledigt</option>
+          <option v-for="status in STATUSES" :key="status">{{ status }}</option>
         </select>
       </label>
 
@@ -71,9 +69,7 @@ function updateField(field, value) {
           :value="editableIdea.priority"
           @change="updateField('priority', $event.target.value)"
         >
-          <option>Niedrig</option>
-          <option>Mittel</option>
-          <option>Hoch</option>
+          <option v-for="priority in PRIORITIES" :key="priority">{{ priority }}</option>
         </select>
       </label>
 
