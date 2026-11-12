@@ -7,9 +7,9 @@ import { RouterLink } from 'vue-router'
     <p class="eyebrow">ÜBER DIE APP</p>
     <h1>Eine kleine Werkstatt für große Ideen.</h1>
     <p class="intro">
-      Diese Vue-Anwendung zeigt, wie eine veränderbare Liste als Master-Detail-Ansicht
-      organisiert werden kann. Alle Eingaben werden direkt übernommen und lokal im Browser
-      gespeichert.
+      Ein Ideenpool zum gemeinsamen Brainstormen: Ideen sammeln, mit Tags versehen,
+      Argumente dafür und dagegen festhalten, diskutieren und per Stimme bewerten.
+      Alle Eingaben werden direkt übernommen und lokal im Browser gespeichert.
     </p>
 
     <div class="feature-grid">
@@ -27,6 +27,11 @@ import { RouterLink } from 'vue-router'
         <span>03</span>
         <h2>Fetch &amp; Router</h2>
         <p>Startdaten kommen aus JSON; jede gewählte Idee erhält eine eigene URL.</p>
+      </article>
+      <article>
+        <span>04</span>
+        <h2>Bewerten &amp; Diskutieren</h2>
+        <p>Upvotes, Pro/Contra-Listen und Kommentare helfen, die besten Ideen zu finden.</p>
       </article>
     </div>
 
