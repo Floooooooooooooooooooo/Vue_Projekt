@@ -1,6 +1,35 @@
 import { reactive, ref, watch } from 'vue'
 import { STORAGE_KEY } from '@/constants'
 
+// alte Status-Werte aus gespeicherten Daten auf die neuen abbilden
+const LEGACY_STATUS = {
+  Idee: 'Neu',
+  Geplant: 'Favorit',
+  'In Arbeit': 'In Diskussion',
+  Erledigt: 'Favorit',
+}
+
+function createEmptyIdea(id, title) {
+  return {
+    id,
+    title,
+    category: 'Allgemein',
+    status: 'Neu',
+    priority: 'Mittel',
+    description: '',
+    owner: '',
+  }
+}
+
+// fehlende Felder ergänzen, damit auch ältere gespeicherte Daten funktionieren
+function normalizeIdea(raw) {
+  const idea = { ...createEmptyIdea(raw.id, raw.title), ...raw }
+  delete idea.dueDate
+  delete idea.progress
+  idea.status = LEGACY_STATUS[idea.status] ?? idea.status
+  return idea
+}
+
 export function useIdeas() {
   // reactive: die veränderbare Sammlung unserer Fachdaten
   const ideas = reactive([])
@@ -34,7 +63,7 @@ export function useIdeas() {
         loadedIdeas = await response.json()
       }
 
-      ideas.splice(0, ideas.length, ...loadedIdeas)
+      ideas.splice(0, ideas.length, ...loadedIdeas.map(normalizeIdea))
     } catch (error) {
       errorMessage.value = `Die Daten konnten nicht geladen werden (${error.message}).`
     } finally {
@@ -44,17 +73,7 @@ export function useIdeas() {
 
   function addIdea(title) {
     const nextId = Math.max(0, ...ideas.map((idea) => idea.id)) + 1
-    ideas.unshift({
-      id: nextId,
-      title,
-      category: 'Allgemein',
-      status: 'Idee',
-      priority: 'Mittel',
-      description: '',
-      owner: '',
-      dueDate: '',
-      progress: 0,
-    })
+    ideas.unshift(createEmptyIdea(nextId, title))
     return nextId
   }
 

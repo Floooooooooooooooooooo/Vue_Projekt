@@ -43,8 +43,6 @@ const filteredIdeas = computed(() => {
 const comparators = {
   // höhere Priorität zuerst
   priority: (a, b) => PRIORITIES.indexOf(b.priority) - PRIORITIES.indexOf(a.priority),
-  // Ideen ohne Datum landen am Ende
-  dueDate: (a, b) => (a.dueDate || '9999-12-31').localeCompare(b.dueDate || '9999-12-31'),
   title: (a, b) => a.title.localeCompare(b.title, 'de'),
 }
 

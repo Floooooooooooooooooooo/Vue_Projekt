@@ -190,9 +190,10 @@ h1, h2 { margin-bottom: 0; letter-spacing: -0.04em; line-height: 1.15; }
 .idea-card h3 { margin: 5px 0 8px; overflow-wrap: anywhere; font-size: 15px; }
 .idea-card__meta { color: var(--muted); font-size: 12px; gap: 6px; }
 .status-dot { width: 7px; height: 7px; background: #aaa; border-radius: 50%; }
-.status-dot[data-status='In Arbeit'] { background: #d98533; }
-.status-dot[data-status='Geplant'] { background: #4f75aa; }
-.status-dot[data-status='Erledigt'] { background: var(--green); }
+.status-dot[data-status='Neu'] { background: var(--green); }
+.status-dot[data-status='In Diskussion'] { background: #4f75aa; }
+.status-dot[data-status='Favorit'] { background: var(--orange); }
+.status-dot[data-status='Verworfen'] { background: #c9c6bb; }
 .priority-badge {
   margin-left: auto;
   padding: 2px 7px;
@@ -203,8 +204,6 @@ h1, h2 { margin-bottom: 0; letter-spacing: -0.04em; line-height: 1.15; }
   font-weight: 700;
 }
 .priority-badge[data-priority='Hoch'] { color: #fff; background: var(--orange); }
-.due-date { font-size: 11px; }
-.due-date--overdue { color: var(--orange); font-weight: 700; }
 
 .empty-list, .detail-panel--empty {
   display: grid;

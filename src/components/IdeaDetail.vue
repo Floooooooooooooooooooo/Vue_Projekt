@@ -47,7 +47,7 @@ function updateField(field, value) {
       </label>
 
       <label class="field">
-        <span>Verantwortlich</span>
+        <span>Eingebracht von</span>
         <input
           :value="idea.owner"
           type="text"
@@ -70,28 +70,6 @@ function updateField(field, value) {
         >
           <option v-for="priority in PRIORITIES" :key="priority">{{ priority }}</option>
         </select>
-      </label>
-
-      <label class="field">
-        <span>Fällig am</span>
-        <input
-          :value="idea.dueDate"
-          type="date"
-          @input="updateField('dueDate', $event.target.value)"
-        />
-      </label>
-
-      <label class="field">
-        <span>Fortschritt: {{ idea.progress }} %</span>
-        <input
-          :value="idea.progress"
-          class="range"
-          type="range"
-          min="0"
-          max="100"
-          step="5"
-          @input="updateField('progress', Number($event.target.value))"
-        />
       </label>
 
       <label class="field field--wide">

@@ -9,7 +9,7 @@ import { RouterLink, RouterView } from 'vue-router'
         <span class="brand-mark">IW</span>
         <span>
           <strong>Ideenwerkstatt</strong>
-          <small>Planen · Verfeinern · Umsetzen</small>
+          <small>Sammeln · Diskutieren · Bewerten</small>
         </span>
       </RouterLink>
 
