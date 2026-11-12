@@ -7,6 +7,7 @@ import { PRIORITIES, STATUSES } from '@/constants'
 const props = defineProps({
   idea: { type: Object, default: null },
   missing: { type: Boolean, default: false },
+  saving: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update', 'add-comment', 'remove-comment'])
@@ -32,7 +33,9 @@ function updateTags(input) {
         <p class="eyebrow">DETAILANSICHT</p>
         <h2>{{ idea.title || 'Unbenannte Idee' }}</h2>
       </div>
-      <span class="save-indicator">✓ automatisch gespeichert</span>
+      <span class="save-indicator" :class="{ 'save-indicator--busy': saving }" aria-live="polite">
+        {{ saving ? '… wird gespeichert' : '✓ in der Datenbank gespeichert' }}
+      </span>
     </div>
 
     <div class="form-grid">

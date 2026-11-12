@@ -15,6 +15,7 @@ const {
   isLoading,
   errorMessage,
   saveError,
+  isSaving,
   loadIdeas,
   addIdea: createIdea,
   updateIdea,
@@ -148,6 +149,7 @@ onMounted(() => loadIdeas())
     <IdeaDetail
       :idea="selectedIdea"
       :missing="isMissingIdea"
+      :saving="isSaving"
       @update="updateIdea"
       @add-comment="addComment"
       @remove-comment="removeComment"

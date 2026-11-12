@@ -447,3 +447,5 @@ h1, h2 { margin-bottom: 0; letter-spacing: -0.04em; line-height: 1.15; }
 @media (max-width: 560px) {
   .comment-form { grid-template-columns: 1fr; }
 }
+
+.save-indicator--busy { color: var(--muted); background: #ebe9e1; }

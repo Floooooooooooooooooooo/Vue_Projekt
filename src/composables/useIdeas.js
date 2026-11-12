@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { VOTES_KEY } from '@/constants'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
@@ -44,6 +44,18 @@ export function useIdeas() {
 
   // noch nicht gespeicherte Änderungen pro Idee: id -> { timer, changes }
   const pendingSaves = new Map()
+  // Anzahl geplanter oder laufender Schreibvorgänge
+  const openWrites = ref(0)
+  const isSaving = computed(() => openWrites.value > 0)
+
+  async function track(request) {
+    openWrites.value++
+    try {
+      return await request
+    } finally {
+      openWrites.value--
+    }
+  }
 
   function findIdea(id) {
     return ideas.find((idea) => idea.id === id)
@@ -77,7 +89,9 @@ export function useIdeas() {
   }
 
   async function addIdea(title) {
-    const { data, error } = await supabase.from('ideas').insert({ title }).select(IDEA_COLUMNS).single()
+    const { data, error } = await track(
+      supabase.from('ideas').insert({ title }).select(IDEA_COLUMNS).single(),
+    )
     if (error) {
       reportSaveError('Anlegen', error)
       return null
@@ -104,7 +118,11 @@ export function useIdeas() {
 
   // beim Tippen nicht jeden Buchstaben einzeln an die Datenbank schicken
   function scheduleSave(id, changes) {
-    const pending = pendingSaves.get(id) ?? { changes: {} }
+    let pending = pendingSaves.get(id)
+    if (!pending) {
+      pending = { changes: {} }
+      openWrites.value++
+    }
     clearTimeout(pending.timer)
     pending.changes = { ...pending.changes, ...changes }
     pending.timer = setTimeout(() => saveChanges(id), SAVE_DELAY)
@@ -118,21 +136,39 @@ export function useIdeas() {
     clearTimeout(pending.timer)
     pendingSaves.delete(id)
 
-    const { error } = await supabase.from('ideas').update(pending.changes).eq('id', id)
-    if (error) reportSaveError('Speichern', error)
+    try {
+      const { error } = await supabase.from('ideas').update(pending.changes).eq('id', id)
+      if (error) reportSaveError('Speichern', error)
+    } finally {
+      openWrites.value--
+    }
+  }
+
+  // alles sofort speichern, z. B. bevor die Seite verlassen wird
+  function flushSaves() {
+    for (const id of [...pendingSaves.keys()]) saveChanges(id)
+  }
+
+  function warnBeforeUnload(event) {
+    if (!isSaving.value) return
+    flushSaves()
+    event.preventDefault()
   }
 
   async function removeIdea(id) {
     if (!findIdea(id)) return false
 
-    const { error } = await supabase.from('ideas').delete().eq('id', id)
+    const { error } = await track(supabase.from('ideas').delete().eq('id', id))
     if (error) {
       reportSaveError('Löschen', error)
       return false
     }
 
-    clearTimeout(pendingSaves.get(id)?.timer)
-    pendingSaves.delete(id)
+    if (pendingSaves.has(id)) {
+      clearTimeout(pendingSaves.get(id).timer)
+      pendingSaves.delete(id)
+      openWrites.value--
+    }
     const index = ideas.findIndex((idea) => idea.id === id)
     if (index !== -1) ideas.splice(index, 1)
     return true
@@ -153,7 +189,7 @@ export function useIdeas() {
       : [...votedIds.value, id]
     localStorage.setItem(VOTES_KEY, JSON.stringify(votedIds.value))
 
-    const { data, error } = await supabase.rpc('vote_idea', { idea_id: id, delta })
+    const { data, error } = await track(supabase.rpc('vote_idea', { idea_id: id, delta }))
     if (error) {
       idea.votes = Math.max(0, idea.votes - delta)
       votedIds.value = previousVotedIds
@@ -181,18 +217,16 @@ export function useIdeas() {
   }
 
   async function addComment(ideaId, { author, text }) {
-    const { data, error } = await supabase
-      .from('comments')
-      .insert({ idea_id: ideaId, author, text })
-      .select()
-      .single()
+    const { data, error } = await track(
+      supabase.from('comments').insert({ idea_id: ideaId, author, text }).select().single(),
+    )
 
     if (error) reportSaveError('Kommentieren', error)
     else insertComment(data)
   }
 
   async function removeComment(ideaId, commentId) {
-    const { error } = await supabase.from('comments').delete().eq('id', commentId)
+    const { error } = await track(supabase.from('comments').delete().eq('id', commentId))
     if (error) reportSaveError('Kommentar löschen', error)
     else deleteCommentLocally(commentId)
   }
@@ -244,8 +278,16 @@ export function useIdeas() {
     channel = null
   }
 
-  onMounted(subscribe)
-  onUnmounted(unsubscribe)
+  onMounted(() => {
+    subscribe()
+    window.addEventListener('beforeunload', warnBeforeUnload)
+  })
+
+  onUnmounted(() => {
+    flushSaves()
+    unsubscribe()
+    window.removeEventListener('beforeunload', warnBeforeUnload)
+  })
 
   return {
     ideas,
@@ -253,6 +295,7 @@ export function useIdeas() {
     isLoading,
     errorMessage,
     saveError,
+    isSaving,
     loadIdeas,
     addIdea,
     updateIdea,
