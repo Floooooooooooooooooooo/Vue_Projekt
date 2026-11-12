@@ -9,8 +9,20 @@ import { PRIORITIES, SORT_OPTIONS, STATUSES } from '@/constants'
 const route = useRoute()
 const router = useRouter()
 
-const { ideas, isLoading, errorMessage, loadIdeas, addIdea: createIdea, updateIdea, removeIdea: deleteIdea, votedIds, toggleVote } =
-  useIdeas()
+const {
+  ideas,
+  votedIds,
+  isLoading,
+  errorMessage,
+  saveError,
+  loadIdeas,
+  addIdea: createIdea,
+  updateIdea,
+  removeIdea: deleteIdea,
+  toggleVote,
+  addComment,
+  removeComment,
+} = useIdeas()
 
 // ref: einzelne UI-Zustände
 const searchTerm = ref('')
@@ -58,26 +70,20 @@ function selectIdea(id) {
   router.push({ name: 'idea-detail', params: { id } })
 }
 
-function addIdea() {
+async function addIdea() {
   const title = newTitle.value.trim()
   if (!title) return
 
-  const id = createIdea(title)
   newTitle.value = ''
-  selectIdea(id)
+  const id = await createIdea(title)
+  if (id !== null) selectIdea(id)
 }
 
-function removeIdea(id) {
+async function removeIdea(id) {
   const idea = ideas.find((item) => item.id === id)
   if (!idea || !window.confirm(`„${idea.title || 'Unbenannte Idee'}“ wirklich löschen?`)) return
 
-  if (deleteIdea(id) && selectedId.value === id) router.push({ name: 'home' })
-}
-
-async function resetIdeas() {
-  if (!window.confirm('Alle Änderungen verwerfen und Beispieldaten neu laden?')) return
-  await loadIdeas(true)
-  router.push({ name: 'home' })
+  if ((await deleteIdea(id)) && selectedId.value === id) router.push({ name: 'home' })
 }
 
 onMounted(() => loadIdeas())
@@ -115,7 +121,12 @@ onMounted(() => loadIdeas())
         <button type="button" aria-label="Tag-Filter entfernen" @click="tagFilter = ''">×</button>
       </p>
 
-      <p v-if="isLoading" class="notice">Ideen werden per Fetch geladen …</p>
+      <p v-if="saveError" class="notice notice--error">
+        {{ saveError }}
+        <button type="button" @click="saveError = ''">OK</button>
+      </p>
+
+      <p v-if="isLoading" class="notice">Ideen werden aus der Datenbank geladen …</p>
       <div v-else-if="errorMessage" class="notice notice--error">
         {{ errorMessage }}
         <button type="button" @click="loadIdeas()">Noch einmal</button>
@@ -131,9 +142,15 @@ onMounted(() => loadIdeas())
         @vote="toggleVote"
       />
 
-      <button class="reset-button" type="button" @click="resetIdeas">↻ Beispieldaten neu laden</button>
+      <button class="reset-button" type="button" @click="loadIdeas()">↻ Neu laden</button>
     </section>
 
-    <IdeaDetail :idea="selectedIdea" :missing="isMissingIdea" @update="updateIdea" />
+    <IdeaDetail
+      :idea="selectedIdea"
+      :missing="isMissingIdea"
+      @update="updateIdea"
+      @add-comment="addComment"
+      @remove-comment="removeComment"
+    />
   </main>
 </template>

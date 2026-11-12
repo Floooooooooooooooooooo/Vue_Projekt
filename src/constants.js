@@ -6,5 +6,4 @@ export const SORT_OPTIONS = {
   priority: 'Priorität',
   title: 'Titel (A–Z)',
 }
-export const STORAGE_KEY = 'idea-lab-items'
 export const VOTES_KEY = 'idea-lab-votes'

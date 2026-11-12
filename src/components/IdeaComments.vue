@@ -1,11 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 
-const props = defineProps({
+defineProps({
   comments: { type: Array, required: true },
 })
 
-const emit = defineEmits(['update'])
+const emit = defineEmits(['add', 'remove'])
 
 const author = ref('')
 const text = ref('')
@@ -14,24 +14,8 @@ function addComment() {
   const body = text.value.trim()
   if (!body) return
 
-  const nextId = Math.max(0, ...props.comments.map((comment) => comment.id)) + 1
-  emit('update', [
-    ...props.comments,
-    {
-      id: nextId,
-      author: author.value.trim() || 'Anonym',
-      text: body,
-      createdAt: new Date().toISOString(),
-    },
-  ])
+  emit('add', { author: author.value.trim() || 'Anonym', text: body })
   text.value = ''
-}
-
-function removeComment(id) {
-  emit(
-    'update',
-    props.comments.filter((comment) => comment.id !== id),
-  )
 }
 
 function formatTime(isoDate) {
@@ -59,7 +43,7 @@ function formatTime(isoDate) {
             class="icon-button"
             type="button"
             aria-label="Kommentar löschen"
-            @click="removeComment(comment.id)"
+            @click="emit('remove', comment.id)"
           >
             ×
           </button>

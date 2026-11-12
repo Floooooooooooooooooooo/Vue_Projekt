@@ -9,7 +9,7 @@ const props = defineProps({
   missing: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['update'])
+const emit = defineEmits(['update', 'add-comment', 'remove-comment'])
 
 function updateField(field, value) {
   emit('update', { ...props.idea, [field]: value })
@@ -123,7 +123,8 @@ function updateTags(input) {
     <IdeaComments
       :key="`comments-${idea.id}`"
       :comments="idea.comments"
-      @update="updateField('comments', $event)"
+      @add="emit('add-comment', idea.id, $event)"
+      @remove="emit('remove-comment', idea.id, $event)"
     />
   </section>
 

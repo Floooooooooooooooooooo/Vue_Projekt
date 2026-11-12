@@ -1,38 +1,36 @@
-import { reactive, ref, watch } from 'vue'
-import { STORAGE_KEY, VOTES_KEY } from '@/constants'
+import { reactive, ref } from 'vue'
+import { VOTES_KEY } from '@/constants'
+import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
-// alte Status-Werte aus gespeicherten Daten auf die neuen abbilden
-const LEGACY_STATUS = {
-  Idee: 'Neu',
-  Geplant: 'Favorit',
-  'In Arbeit': 'In Diskussion',
-  Erledigt: 'Favorit',
+// Felder, die im Detailformular bearbeitet und in die Datenbank geschrieben werden
+const EDITABLE_FIELDS = ['title', 'category', 'status', 'priority', 'description', 'owner', 'tags', 'pros', 'cons']
+
+// nach der letzten Eingabe so lange warten, bevor gespeichert wird
+const SAVE_DELAY = 400
+
+const IDEA_COLUMNS = '*, comments(id, author, text, created_at)'
+
+// Datenbank-Zeilen (snake_case) in das Format der App umwandeln
+function toComment({ id, author, text, created_at: createdAt }) {
+  return { id, author, text, createdAt }
 }
 
-function createEmptyIdea(id, title) {
+function toIdea(row) {
+  const { comments = [], created_at: createdAt, ...idea } = row
   return {
-    id,
-    title,
-    category: 'Allgemein',
-    status: 'Neu',
-    priority: 'Mittel',
-    description: '',
-    owner: '',
-    tags: [],
-    votes: 0,
-    pros: [],
-    cons: [],
-    comments: [],
+    ...idea,
+    createdAt,
+    comments: comments.map(toComment).sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
   }
 }
 
-// fehlende Felder ergänzen, damit auch ältere gespeicherte Daten funktionieren
-function normalizeIdea(raw) {
-  const idea = { ...createEmptyIdea(raw.id, raw.title), ...raw }
-  delete idea.dueDate
-  delete idea.progress
-  idea.status = LEGACY_STATUS[idea.status] ?? idea.status
-  return idea
+function readVotedIds() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(VOTES_KEY))
+    return Array.isArray(saved) ? saved : []
+  } catch {
+    return []
+  }
 }
 
 export function useIdeas() {
@@ -40,106 +38,177 @@ export function useIdeas() {
   const ideas = reactive([])
   const isLoading = ref(true)
   const errorMessage = ref('')
+  const saveError = ref('')
   // IDs der Ideen, für die in diesem Browser schon abgestimmt wurde
   const votedIds = ref(readVotedIds())
 
-  function readVotedIds() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(VOTES_KEY))
-      return Array.isArray(saved) ? saved : []
-    } catch {
-      return []
-    }
+  // noch nicht gespeicherte Änderungen pro Idee: id -> { timer, changes }
+  const pendingSaves = new Map()
+
+  function findIdea(id) {
+    return ideas.find((idea) => idea.id === id)
   }
 
-  function readSavedIdeas() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
-      return Array.isArray(saved) ? saved : null
-    } catch {
-      // kaputte Daten im Speicher ignorieren und neu laden
-      localStorage.removeItem(STORAGE_KEY)
-      return null
-    }
+  function reportSaveError(action, error) {
+    saveError.value = `${action} fehlgeschlagen: ${error.message}`
   }
 
-  async function loadIdeas(ignoreSaved = false) {
+  async function loadIdeas() {
     isLoading.value = true
     errorMessage.value = ''
 
-    try {
-      if (ignoreSaved) {
-        localStorage.removeItem(STORAGE_KEY)
-        localStorage.removeItem(VOTES_KEY)
-        votedIds.value = []
-      }
-
-      let loadedIdeas = ignoreSaved ? null : readSavedIdeas()
-
-      if (!loadedIdeas) {
-        // BASE_URL beachten, damit die App auch in einem Unterordner läuft (z. B. GitHub Pages)
-        const response = await fetch(`${import.meta.env.BASE_URL}data/ideas.json`)
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        loadedIdeas = await response.json()
-      }
-
-      ideas.splice(0, ideas.length, ...loadedIdeas.map(normalizeIdea))
-    } catch (error) {
-      errorMessage.value = `Die Daten konnten nicht geladen werden (${error.message}).`
-    } finally {
+    if (!isSupabaseConfigured) {
+      errorMessage.value = 'Die Datenbank ist nicht eingerichtet – lege eine .env.local an (siehe README).'
       isLoading.value = false
+      return
     }
+
+    const { data, error } = await supabase
+      .from('ideas')
+      .select(IDEA_COLUMNS)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      errorMessage.value = `Die Daten konnten nicht geladen werden (${error.message}).`
+    } else {
+      ideas.splice(0, ideas.length, ...data.map(toIdea))
+    }
+    isLoading.value = false
   }
 
-  function addIdea(title) {
-    const nextId = Math.max(0, ...ideas.map((idea) => idea.id)) + 1
-    ideas.unshift(createEmptyIdea(nextId, title))
-    return nextId
+  async function addIdea(title) {
+    const { data, error } = await supabase.from('ideas').insert({ title }).select(IDEA_COLUMNS).single()
+    if (error) {
+      reportSaveError('Anlegen', error)
+      return null
+    }
+
+    if (!findIdea(data.id)) ideas.unshift(toIdea(data))
+    return data.id
   }
 
   function updateIdea(updatedIdea) {
-    const index = ideas.findIndex((idea) => idea.id === updatedIdea.id)
-    if (index !== -1) Object.assign(ideas[index], updatedIdea)
+    const idea = findIdea(updatedIdea.id)
+    if (!idea) return
+
+    const changes = {}
+    for (const field of EDITABLE_FIELDS) {
+      if (field in updatedIdea && updatedIdea[field] !== idea[field]) changes[field] = updatedIdea[field]
+    }
+    if (Object.keys(changes).length === 0) return
+
+    // sofort anzeigen, verzögert speichern
+    Object.assign(idea, changes)
+    scheduleSave(idea.id, changes)
   }
 
-  function removeIdea(id) {
-    const index = ideas.findIndex((idea) => idea.id === id)
-    if (index === -1) return false
+  // beim Tippen nicht jeden Buchstaben einzeln an die Datenbank schicken
+  function scheduleSave(id, changes) {
+    const pending = pendingSaves.get(id) ?? { changes: {} }
+    clearTimeout(pending.timer)
+    pending.changes = { ...pending.changes, ...changes }
+    pending.timer = setTimeout(() => saveChanges(id), SAVE_DELAY)
+    pendingSaves.set(id, pending)
+  }
 
-    ideas.splice(index, 1)
+  async function saveChanges(id) {
+    const pending = pendingSaves.get(id)
+    if (!pending) return
+
+    clearTimeout(pending.timer)
+    pendingSaves.delete(id)
+
+    const { error } = await supabase.from('ideas').update(pending.changes).eq('id', id)
+    if (error) reportSaveError('Speichern', error)
+  }
+
+  async function removeIdea(id) {
+    if (!findIdea(id)) return false
+
+    const { error } = await supabase.from('ideas').delete().eq('id', id)
+    if (error) {
+      reportSaveError('Löschen', error)
+      return false
+    }
+
+    clearTimeout(pendingSaves.get(id)?.timer)
+    pendingSaves.delete(id)
+    const index = ideas.findIndex((idea) => idea.id === id)
+    if (index !== -1) ideas.splice(index, 1)
     return true
   }
 
-  // eine Stimme pro Idee: erneutes Klicken nimmt die Stimme zurück
-  function toggleVote(id) {
-    const idea = ideas.find((item) => item.id === id)
+  // eine Stimme pro Idee und Browser: erneutes Klicken nimmt die Stimme zurück
+  async function toggleVote(id) {
+    const idea = findIdea(id)
     if (!idea) return
 
     const hasVoted = votedIds.value.includes(id)
-    idea.votes = Math.max(0, idea.votes + (hasVoted ? -1 : 1))
+    const delta = hasVoted ? -1 : 1
+    const previousVotedIds = votedIds.value
+
+    idea.votes = Math.max(0, idea.votes + delta)
     votedIds.value = hasVoted
       ? votedIds.value.filter((votedId) => votedId !== id)
       : [...votedIds.value, id]
     localStorage.setItem(VOTES_KEY, JSON.stringify(votedIds.value))
+
+    const { data, error } = await supabase.rpc('vote_idea', { idea_id: id, delta })
+    if (error) {
+      idea.votes = Math.max(0, idea.votes - delta)
+      votedIds.value = previousVotedIds
+      localStorage.setItem(VOTES_KEY, JSON.stringify(votedIds.value))
+      reportSaveError('Abstimmen', error)
+      return
+    }
+
+    // Wert aus der Datenbank übernehmen (enthält auch Stimmen anderer)
+    if (typeof data === 'number') idea.votes = data
   }
 
-  watch(
-    ideas,
-    (currentIdeas) => {
-      if (!isLoading.value) localStorage.setItem(STORAGE_KEY, JSON.stringify(currentIdeas))
-    },
-    { deep: true },
-  )
+  function insertComment(row) {
+    const idea = findIdea(row.idea_id)
+    if (idea && !idea.comments.some((comment) => comment.id === row.id)) {
+      idea.comments.push(toComment(row))
+    }
+  }
+
+  function deleteCommentLocally(commentId) {
+    for (const idea of ideas) {
+      const index = idea.comments.findIndex((comment) => comment.id === commentId)
+      if (index !== -1) idea.comments.splice(index, 1)
+    }
+  }
+
+  async function addComment(ideaId, { author, text }) {
+    const { data, error } = await supabase
+      .from('comments')
+      .insert({ idea_id: ideaId, author, text })
+      .select()
+      .single()
+
+    if (error) reportSaveError('Kommentieren', error)
+    else insertComment(data)
+  }
+
+  async function removeComment(ideaId, commentId) {
+    const { error } = await supabase.from('comments').delete().eq('id', commentId)
+    if (error) reportSaveError('Kommentar löschen', error)
+    else deleteCommentLocally(commentId)
+  }
 
   return {
     ideas,
     votedIds,
     isLoading,
     errorMessage,
+    saveError,
     loadIdeas,
     addIdea,
     updateIdea,
     removeIdea,
     toggleVote,
+    addComment,
+    removeComment,
   }
 }
