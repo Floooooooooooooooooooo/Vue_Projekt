@@ -1,4 +1,4 @@
-import { reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import { VOTES_KEY } from '@/constants'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
@@ -196,6 +196,56 @@ export function useIdeas() {
     if (error) reportSaveError('Kommentar löschen', error)
     else deleteCommentLocally(commentId)
   }
+
+  // ---------------------------------------------------------------
+  // Realtime: Änderungen aus anderen Browsern (z. B. von Florian) live übernehmen
+  // ---------------------------------------------------------------
+
+  let channel = null
+
+  function handleIdeaChange({ eventType, new: row, old }) {
+    if (eventType === 'DELETE') {
+      const index = ideas.findIndex((idea) => idea.id === old.id)
+      if (index !== -1) ideas.splice(index, 1)
+      return
+    }
+
+    const idea = findIdea(row.id)
+    if (!idea) {
+      ideas.unshift(toIdea(row))
+      return
+    }
+
+    // eigene, noch nicht gespeicherte Eingaben nicht überschreiben
+    if (pendingSaves.has(row.id)) return
+
+    const { comments, ...fields } = toIdea(row)
+    Object.assign(idea, fields)
+  }
+
+  function handleCommentChange({ eventType, new: row, old }) {
+    if (eventType === 'INSERT') insertComment(row)
+    if (eventType === 'DELETE') deleteCommentLocally(old.id)
+  }
+
+  function subscribe() {
+    if (!isSupabaseConfigured || channel) return
+
+    channel = supabase
+      .channel('ideenwerkstatt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ideas' }, handleIdeaChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, handleCommentChange)
+      .subscribe()
+  }
+
+  function unsubscribe() {
+    if (!channel) return
+    supabase.removeChannel(channel)
+    channel = null
+  }
+
+  onMounted(subscribe)
+  onUnmounted(unsubscribe)
 
   return {
     ideas,
