@@ -18,6 +18,20 @@
     ],
     "cons": [
       "Wer gießt in den Ferien?"
+    ],
+    "comments": [
+      {
+        "id": 1,
+        "author": "Noah",
+        "text": "Könnte man gut mit dem Bio-Unterricht verbinden.",
+        "createdAt": "2026-11-03T09:15:00.000Z"
+      },
+      {
+        "id": 2,
+        "author": "Lea",
+        "text": "Für die Ferien könnten wir einen Gießplan machen.",
+        "createdAt": "2026-11-04T12:40:00.000Z"
+      }
     ]
   },
   {
@@ -38,7 +52,8 @@
     ],
     "cons": [
       "Qualität der Karten schwer zu prüfen"
-    ]
+    ],
+    "comments": []
   },
   {
     "id": 103,
@@ -59,6 +74,14 @@
     ],
     "cons": [
       "Braucht Werkzeug und Aufsicht"
+    ],
+    "comments": [
+      {
+        "id": 1,
+        "author": "Elias",
+        "text": "Mein Opa würde sicher beim Reparieren helfen!",
+        "createdAt": "2026-11-02T16:05:00.000Z"
+      }
     ]
   },
   {
@@ -79,7 +102,8 @@
     "cons": [
       "Schnittaufwand ist hoch",
       "Wenig Hörer"
-    ]
+    ],
+    "comments": []
   },
   {
     "id": 105,
@@ -95,6 +119,7 @@
     ],
     "votes": 9,
     "pros": [],
-    "cons": []
+    "cons": [],
+    "comments": []
   }
 ]

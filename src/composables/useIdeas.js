@@ -22,6 +22,7 @@ function createEmptyIdea(id, title) {
     votes: 0,
     pros: [],
     cons: [],
+    comments: [],
   }
 }
 

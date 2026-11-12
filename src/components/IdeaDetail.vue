@@ -1,6 +1,7 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import ArgumentList from '@/components/ArgumentList.vue'
+import IdeaComments from '@/components/IdeaComments.vue'
 import { PRIORITIES, STATUSES } from '@/constants'
 
 const props = defineProps({
@@ -118,6 +119,12 @@ function updateTags(input) {
         @update="updateField('cons', $event)"
       />
     </div>
+
+    <IdeaComments
+      :key="`comments-${idea.id}`"
+      :comments="idea.comments"
+      @update="updateField('comments', $event)"
+    />
   </section>
 
   <section v-else-if="missing" class="detail-panel detail-panel--empty">

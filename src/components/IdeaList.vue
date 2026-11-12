@@ -53,6 +53,9 @@ defineEmits(['select', 'remove', 'tag', 'vote'])
       <div class="idea-card__meta">
         <span class="status-dot" :data-status="idea.status"></span>
         {{ idea.status }}
+        <span v-if="idea.comments.length" class="comment-count" :title="`${idea.comments.length} Kommentare`">
+          💬 {{ idea.comments.length }}
+        </span>
         <span class="priority-badge" :data-priority="idea.priority">{{ idea.priority }}</span>
         <button
           class="vote-button"
