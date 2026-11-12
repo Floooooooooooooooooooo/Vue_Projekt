@@ -20,6 +20,8 @@ function createEmptyIdea(id, title) {
     owner: '',
     tags: [],
     votes: 0,
+    pros: [],
+    cons: [],
   }
 }
 

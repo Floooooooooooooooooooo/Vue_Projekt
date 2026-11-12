@@ -371,3 +371,45 @@ h1, h2 { margin-bottom: 0; letter-spacing: -0.04em; line-height: 1.15; }
 }
 .vote-button:hover { color: var(--orange); border-color: var(--orange); }
 .vote-button.voted { color: white; background: var(--orange); border-color: var(--orange); }
+
+/* Pro & Contra */
+.arguments { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-top: 28px; }
+.argument-list { padding: 16px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
+.argument-list h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 14px; }
+.argument-list h3 span { color: var(--muted); font-size: 12px; font-weight: 600; }
+.argument-list--pro h3 { color: var(--green); }
+.argument-list--contra h3 { color: #a23c2e; }
+.argument-list ul { margin: 0 0 10px; padding: 0; list-style: none; }
+.argument-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 13px;
+}
+.argument-list li .icon-button { width: 22px; height: 22px; font-size: 16px; }
+.argument-list__empty { color: var(--muted); font-style: italic; }
+.argument-list form { display: flex; gap: 6px; }
+.argument-list input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.argument-list form button {
+  width: 34px;
+  color: white;
+  background: var(--green);
+  border: 0;
+  border-radius: 9px;
+  font-weight: 700;
+}
+.argument-list--contra form button { background: #a23c2e; }
+.argument-list form button:disabled { cursor: not-allowed; opacity: 0.4; }
+@media (max-width: 560px) {
+  .arguments { grid-template-columns: 1fr; }
+}

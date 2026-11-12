@@ -1,5 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
+import ArgumentList from '@/components/ArgumentList.vue'
 import { PRIORITIES, STATUSES } from '@/constants'
 
 const props = defineProps({
@@ -99,6 +100,23 @@ function updateTags(input) {
           @input="updateField('description', $event.target.value)"
         ></textarea>
       </label>
+    </div>
+
+    <div class="arguments">
+      <ArgumentList
+        :key="`pro-${idea.id}`"
+        title="Pro"
+        variant="pro"
+        :items="idea.pros"
+        @update="updateField('pros', $event)"
+      />
+      <ArgumentList
+        :key="`contra-${idea.id}`"
+        title="Contra"
+        variant="contra"
+        :items="idea.cons"
+        @update="updateField('cons', $event)"
+      />
     </div>
   </section>
 
