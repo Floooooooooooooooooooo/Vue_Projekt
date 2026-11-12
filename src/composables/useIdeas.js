@@ -18,6 +18,7 @@ function createEmptyIdea(id, title) {
     priority: 'Mittel',
     description: '',
     owner: '',
+    tags: [],
   }
 }
 

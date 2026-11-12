@@ -6,7 +6,11 @@
     "status": "In Diskussion",
     "priority": "Hoch",
     "description": "Ein übersichtlicher Pflanzplan mit Beeten, Saatzeiten und verantwortlichen Klassen.",
-    "owner": "Mia"
+    "owner": "Mia",
+    "tags": [
+      "nachhaltig",
+      "schule"
+    ]
   },
   {
     "id": 102,
@@ -15,7 +19,11 @@
     "status": "Neu",
     "priority": "Mittel",
     "description": "Schülerinnen und Schüler können eigene Lernkarten-Sets teilen und bewerten.",
-    "owner": "Noah"
+    "owner": "Noah",
+    "tags": [
+      "lernen",
+      "app"
+    ]
   },
   {
     "id": 103,
@@ -24,7 +32,11 @@
     "status": "Favorit",
     "priority": "Hoch",
     "description": "Ein monatlicher Nachmittag, an dem defekte Alltagsgegenstände gemeinsam repariert werden.",
-    "owner": "Lea"
+    "owner": "Lea",
+    "tags": [
+      "nachhaltig",
+      "community"
+    ]
   },
   {
     "id": 104,
@@ -33,7 +45,10 @@
     "status": "Verworfen",
     "priority": "Niedrig",
     "description": "Kurze Interviews und Geschichten aus verschiedenen Klassen als monatliche Episode.",
-    "owner": "Elias"
+    "owner": "Elias",
+    "tags": [
+      "medien"
+    ]
   },
   {
     "id": 105,
@@ -42,6 +57,10 @@
     "status": "Neu",
     "priority": "Niedrig",
     "description": "Über ein Formular können Songs für die große Pause gewünscht werden.",
-    "owner": "Sara"
+    "owner": "Sara",
+    "tags": [
+      "musik",
+      "pause"
+    ]
   }
 ]

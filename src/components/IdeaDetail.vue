@@ -12,6 +12,15 @@ const emit = defineEmits(['update'])
 function updateField(field, value) {
   emit('update', { ...props.idea, [field]: value })
 }
+
+// "Schule, #nachhaltig ,schule" -> ['schule', 'nachhaltig']
+function updateTags(input) {
+  const tags = input
+    .split(',')
+    .map((tag) => tag.trim().replace(/^#/, '').toLocaleLowerCase('de'))
+    .filter(Boolean)
+  updateField('tags', [...new Set(tags)])
+}
 </script>
 
 <template>
@@ -70,6 +79,16 @@ function updateField(field, value) {
         >
           <option v-for="priority in PRIORITIES" :key="priority">{{ priority }}</option>
         </select>
+      </label>
+
+      <label class="field field--wide">
+        <span>Tags (mit Komma trennen)</span>
+        <input
+          :value="idea.tags.join(', ')"
+          type="text"
+          placeholder="z. B. nachhaltig, schule"
+          @change="updateTags($event.target.value)"
+        />
       </label>
 
       <label class="field field--wide">

@@ -4,7 +4,7 @@ defineProps({
   selectedId: { type: Number, default: null },
 })
 
-defineEmits(['select', 'remove'])
+defineEmits(['select', 'remove', 'tag'])
 </script>
 
 <template>
@@ -35,6 +35,20 @@ defineEmits(['select', 'remove'])
         </button>
       </div>
       <h3>{{ idea.title || 'Unbenannte Idee' }}</h3>
+      <div v-if="idea.tags.length" class="tag-list">
+        <button
+          v-for="tag in idea.tags"
+          :key="tag"
+          class="tag"
+          type="button"
+          :title="`Nach #${tag} filtern`"
+          @click.stop="$emit('tag', tag)"
+          @keydown.enter.stop
+          @keydown.space.stop
+        >
+          #{{ tag }}
+        </button>
+      </div>
       <div class="idea-card__meta">
         <span class="status-dot" :data-status="idea.status"></span>
         {{ idea.status }}

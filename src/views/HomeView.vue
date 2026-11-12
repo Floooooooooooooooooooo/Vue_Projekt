@@ -16,6 +16,7 @@ const { ideas, isLoading, errorMessage, loadIdeas, addIdea: createIdea, updateId
 const searchTerm = ref('')
 const statusFilter = ref('Alle')
 const sortBy = ref('newest')
+const tagFilter = ref('')
 const newTitle = ref('')
 
 const selectedId = computed(() => {
@@ -35,8 +36,9 @@ const filteredIdeas = computed(() => {
 
   return ideas.filter((idea) => {
     const matchesStatus = statusFilter.value === 'Alle' || idea.status === statusFilter.value
-    const haystack = `${idea.title} ${idea.category} ${idea.owner}`.toLocaleLowerCase('de')
-    return matchesStatus && haystack.includes(needle)
+    const matchesTag = !tagFilter.value || idea.tags.includes(tagFilter.value)
+    const haystack = `${idea.title} ${idea.category} ${idea.owner} ${idea.tags.join(' ')}`.toLocaleLowerCase('de')
+    return matchesStatus && matchesTag && haystack.includes(needle)
   })
 })
 
@@ -107,6 +109,11 @@ onMounted(() => loadIdeas())
         </select>
       </div>
 
+      <p v-if="tagFilter" class="active-filter">
+        Gefiltert nach <strong>#{{ tagFilter }}</strong>
+        <button type="button" aria-label="Tag-Filter entfernen" @click="tagFilter = ''">×</button>
+      </p>
+
       <p v-if="isLoading" class="notice">Ideen werden per Fetch geladen …</p>
       <div v-else-if="errorMessage" class="notice notice--error">
         {{ errorMessage }}
@@ -118,6 +125,7 @@ onMounted(() => loadIdeas())
         :selected-id="selectedId"
         @select="selectIdea"
         @remove="removeIdea"
+        @tag="tagFilter = $event"
       />
 
       <button class="reset-button" type="button" @click="resetIdeas">↻ Beispieldaten neu laden</button>
