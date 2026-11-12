@@ -1,5 +1,5 @@
 import { reactive, ref, watch } from 'vue'
-import { STORAGE_KEY } from '@/constants'
+import { STORAGE_KEY, VOTES_KEY } from '@/constants'
 
 // alte Status-Werte aus gespeicherten Daten auf die neuen abbilden
 const LEGACY_STATUS = {
@@ -19,6 +19,7 @@ function createEmptyIdea(id, title) {
     description: '',
     owner: '',
     tags: [],
+    votes: 0,
   }
 }
 
@@ -36,6 +37,17 @@ export function useIdeas() {
   const ideas = reactive([])
   const isLoading = ref(true)
   const errorMessage = ref('')
+  // IDs der Ideen, für die in diesem Browser schon abgestimmt wurde
+  const votedIds = ref(readVotedIds())
+
+  function readVotedIds() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(VOTES_KEY))
+      return Array.isArray(saved) ? saved : []
+    } catch {
+      return []
+    }
+  }
 
   function readSavedIdeas() {
     try {
@@ -53,7 +65,11 @@ export function useIdeas() {
     errorMessage.value = ''
 
     try {
-      if (ignoreSaved) localStorage.removeItem(STORAGE_KEY)
+      if (ignoreSaved) {
+        localStorage.removeItem(STORAGE_KEY)
+        localStorage.removeItem(VOTES_KEY)
+        votedIds.value = []
+      }
 
       let loadedIdeas = ignoreSaved ? null : readSavedIdeas()
 
@@ -91,6 +107,19 @@ export function useIdeas() {
     return true
   }
 
+  // eine Stimme pro Idee: erneutes Klicken nimmt die Stimme zurück
+  function toggleVote(id) {
+    const idea = ideas.find((item) => item.id === id)
+    if (!idea) return
+
+    const hasVoted = votedIds.value.includes(id)
+    idea.votes = Math.max(0, idea.votes + (hasVoted ? -1 : 1))
+    votedIds.value = hasVoted
+      ? votedIds.value.filter((votedId) => votedId !== id)
+      : [...votedIds.value, id]
+    localStorage.setItem(VOTES_KEY, JSON.stringify(votedIds.value))
+  }
+
   watch(
     ideas,
     (currentIdeas) => {
@@ -99,5 +128,15 @@ export function useIdeas() {
     { deep: true },
   )
 
-  return { ideas, isLoading, errorMessage, loadIdeas, addIdea, updateIdea, removeIdea }
+  return {
+    ideas,
+    votedIds,
+    isLoading,
+    errorMessage,
+    loadIdeas,
+    addIdea,
+    updateIdea,
+    removeIdea,
+    toggleVote,
+  }
 }

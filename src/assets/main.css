@@ -357,3 +357,17 @@ h1, h2 { margin-bottom: 0; letter-spacing: -0.04em; line-height: 1.15; }
   border: 1px solid var(--line);
   border-radius: 6px;
 }
+
+/* Abstimmen */
+.vote-button {
+  min-width: 46px;
+  padding: 3px 8px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.vote-button:hover { color: var(--orange); border-color: var(--orange); }
+.vote-button.voted { color: white; background: var(--orange); border-color: var(--orange); }

@@ -10,7 +10,8 @@
     "tags": [
       "nachhaltig",
       "schule"
-    ]
+    ],
+    "votes": 12
   },
   {
     "id": 102,
@@ -23,7 +24,8 @@
     "tags": [
       "lernen",
       "app"
-    ]
+    ],
+    "votes": 7
   },
   {
     "id": 103,
@@ -36,7 +38,8 @@
     "tags": [
       "nachhaltig",
       "community"
-    ]
+    ],
+    "votes": 15
   },
   {
     "id": 104,
@@ -48,7 +51,8 @@
     "owner": "Elias",
     "tags": [
       "medien"
-    ]
+    ],
+    "votes": 3
   },
   {
     "id": 105,
@@ -61,6 +65,7 @@
     "tags": [
       "musik",
       "pause"
-    ]
+    ],
+    "votes": 9
   }
 ]

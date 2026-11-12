@@ -9,7 +9,7 @@ import { PRIORITIES, SORT_OPTIONS, STATUSES } from '@/constants'
 const route = useRoute()
 const router = useRouter()
 
-const { ideas, isLoading, errorMessage, loadIdeas, addIdea: createIdea, updateIdea, removeIdea: deleteIdea } =
+const { ideas, isLoading, errorMessage, loadIdeas, addIdea: createIdea, updateIdea, removeIdea: deleteIdea, votedIds, toggleVote } =
   useIdeas()
 
 // ref: einzelne UI-Zustände
@@ -43,6 +43,7 @@ const filteredIdeas = computed(() => {
 })
 
 const comparators = {
+  votes: (a, b) => b.votes - a.votes,
   // höhere Priorität zuerst
   priority: (a, b) => PRIORITIES.indexOf(b.priority) - PRIORITIES.indexOf(a.priority),
   title: (a, b) => a.title.localeCompare(b.title, 'de'),
@@ -123,9 +124,11 @@ onMounted(() => loadIdeas())
         v-else
         :ideas="sortedIdeas"
         :selected-id="selectedId"
+        :voted-ids="votedIds"
         @select="selectIdea"
         @remove="removeIdea"
         @tag="tagFilter = $event"
+        @vote="toggleVote"
       />
 
       <button class="reset-button" type="button" @click="resetIdeas">↻ Beispieldaten neu laden</button>

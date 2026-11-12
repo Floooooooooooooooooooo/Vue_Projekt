@@ -2,9 +2,10 @@
 defineProps({
   ideas: { type: Array, required: true },
   selectedId: { type: Number, default: null },
+  votedIds: { type: Array, default: () => [] },
 })
 
-defineEmits(['select', 'remove', 'tag'])
+defineEmits(['select', 'remove', 'tag', 'vote'])
 </script>
 
 <template>
@@ -53,6 +54,18 @@ defineEmits(['select', 'remove', 'tag'])
         <span class="status-dot" :data-status="idea.status"></span>
         {{ idea.status }}
         <span class="priority-badge" :data-priority="idea.priority">{{ idea.priority }}</span>
+        <button
+          class="vote-button"
+          :class="{ voted: votedIds.includes(idea.id) }"
+          type="button"
+          :aria-pressed="votedIds.includes(idea.id)"
+          :aria-label="`Für ${idea.title} stimmen`"
+          @click.stop="$emit('vote', idea.id)"
+          @keydown.enter.stop
+          @keydown.space.stop
+        >
+          ▲ {{ idea.votes }}
+        </button>
       </div>
     </article>
 
